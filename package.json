@@ -1,0 +1,33 @@
+{
+  "name": "loop-engineer",
+  "version": "0.1.0",
+  "description": "Parrot Factory Loop Engineer — feedback → signal → task → coding → verifier → followup",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "loop-engineer": "./bin/loop-engineer.mjs"
+  },
+  "scripts": {
+    "loop-engineer": "tsx scripts/cli.ts",
+    "hello": "tsx scripts/cli.ts hello",
+    "sync": "tsx scripts/cli.ts sync",
+    "feedback": "tsx scripts/cli.ts feedback",
+    "task": "tsx scripts/cli.ts task",
+    "run-to-task": "tsx scripts/cli.ts run-to-task",
+    "coding": "tsx scripts/cli.ts coding",
+    "verify": "tsx scripts/cli.ts verify",
+    "followup": "tsx scripts/cli.ts followup",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}

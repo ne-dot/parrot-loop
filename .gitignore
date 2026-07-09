@@ -1,0 +1,17 @@
+# 本地密钥与同步状态
+.env
+state/sync-state.json
+
+# 含用户原文 / 联系方式的工件（勿提交；保留 .gitkeep）
+artifacts/feedback/**
+!artifacts/feedback/.gitkeep
+artifacts/followups/**
+!artifacts/followups/.gitkeep
+
+# 依赖与构建
+node_modules/
+dist/
+
+# 系统杂项
+.DS_Store
+*.log
