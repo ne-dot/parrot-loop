@@ -69,6 +69,26 @@ const COMMANDS: Record<string, CommandDef> = {
     stage: '5',
     gate: '仅草稿；【人工】发送',
   },
+  serve: {
+    script: 'serve.ts',
+    summary: 'Control Plane API（只读 + 手动 SYNC / 批准）',
+    stage: '2.2.2',
+  },
+  worker: {
+    script: 'worker.ts',
+    summary: '一 loop 一 worker：--loop sync|feedback|task|coding|verify|followup',
+    stage: '2.2.2',
+  },
+  workers: {
+    script: 'workers.ts',
+    summary: '本地一键拉起全部 loop worker',
+    stage: '2.2.2',
+  },
+  console: {
+    script: 'console.ts',
+    summary: '启动独立 Mission Console（Vite :4011）',
+    stage: '2.2.2',
+  },
 }
 
 const ALIASES: Record<string, string> = {
@@ -79,6 +99,8 @@ const ALIASES: Record<string, string> = {
   'coding-loop': 'coding',
   'followup-loop': 'followup',
   'sync-feedback': 'sync',
+  web: 'console',
+  ui: 'console',
 }
 
 function printHelp(): void {
@@ -112,8 +134,15 @@ function printHelp(): void {
     '  loop-engineer verify --task task-xxx',
     '  loop-engineer followup --task task-xxx',
     '',
+    '事件驱动（2.2.2）:',
+    '  # 另开终端：docker compose up -d   # Redis :6380',
+    '  loop-engineer serve',
+    '  loop-engineer workers',
+    '  loop-engineer console              # 或 web → http://127.0.0.1:4011',
+    '  # Web SYNC NOW / curl POST /api/loop/sync',
+    '',
     '安装到 PATH（本机一次）: cd loop-engineer && npm link',
-    '全局硬边界: 不自动批准 / 不合入 main / 不部署 / 不发信',
+    '全局硬边界: 不合入 main / 不部署 / 不发信；high 可系统批准开工',
     '合同: domains/*/README.md',
   )
 

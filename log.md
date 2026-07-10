@@ -338,3 +338,30 @@
 
 **待人工**:
 - 审阅草稿 → 复制正文至 Admin 备注 → 标反馈为 resolved → 合入分支
+
+## 2026-07-10 14:55 — sync-feedback
+
+- status: `ok`
+- 同步 bug 反馈 2 条（新建 0，更新 2）；API open=2 in_progress=0
+  - api=http://localhost:4001
+  - artifacts=/Users/zj/Desktop/ai-parrot/loop-engineer/artifacts/feedback
+  - 本地 feedback 文件=2
+
+## 2026-07-10 16:13 — feedback-loop
+
+- status: `skipped`
+- 无 pending bug 反馈。请先 loop-engineer sync
+
+## 2026-07-10 16:13 — task-loop
+
+- status: `skipped`
+- 无达阈值 signal，不出 task（跳过 2 个）
+  - signal-abc: status=task_created
+  - signal-podcast-segment-audio-playback: status=task_created
+
+## 2026-07-10 16:13 — task-route
+
+- status: `ok`
+- after task-loop
+  - proposed=1
+  - autoApproved(high)=0

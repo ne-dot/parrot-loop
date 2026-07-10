@@ -17,17 +17,28 @@
     "coding": "tsx scripts/cli.ts coding",
     "verify": "tsx scripts/cli.ts verify",
     "followup": "tsx scripts/cli.ts followup",
+    "serve": "tsx scripts/cli.ts serve",
+    "worker": "tsx scripts/cli.ts worker",
+    "workers": "tsx scripts/cli.ts workers",
+    "console": "tsx scripts/cli.ts console",
+    "console:dev": "tsx scripts/cli.ts console",
+    "console:build": "npm --prefix console run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.15.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "dotenv": "^16.5.0"
+    "bullmq": "^5.80.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.5.0",
+    "express": "^5.2.1"
   }
 }

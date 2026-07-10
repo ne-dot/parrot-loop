@@ -74,6 +74,9 @@ export type TaskFrontmatter = {
   branch: string | null
   created_at: string
   approved_at: string | null
+  approved_by?: string | null
+  rejected_at?: string | null
+  reject_note?: string | null
 }
 
 export type TaskArtifact = {

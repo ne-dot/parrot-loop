@@ -1,6 +1,9 @@
 # 本地密钥与同步状态
 .env
 state/sync-state.json
+state/invocations/
+state/events/
+state/workers/
 
 # 含用户原文 / 联系方式的工件（勿提交；保留 .gitkeep）
 artifacts/feedback/**
@@ -10,6 +13,8 @@ artifacts/followups/**
 
 # 依赖与构建
 node_modules/
+console/node_modules/
+console/dist/
 dist/
 
 # 系统杂项
