@@ -10,6 +10,11 @@ import { PATHS } from './lib/env.js'
 import { appendLog } from './lib/log.js'
 import { listMarkdownFiles, readMarkdownFile } from './lib/md.js'
 import type { FeedbackFrontmatter } from './lib/types.js'
+import {
+  assertFeedbackLoop,
+  formatAssertFailure,
+  listPendingBugIds,
+} from './lib/verify-artifacts.js'
 
 function countPending(): number {
   if (!existsSync(PATHS.feedback)) return 0
@@ -39,6 +44,7 @@ export async function runFeedbackLoop(): Promise<number> {
     return 0
   }
 
+  const pendingIds = listPendingBugIds()
   const signals = listSignalIds()
   const prompt = `
 你是鹦鹉工厂 Loop Engineer 的 Feedback Loop Agent。
@@ -63,12 +69,23 @@ ${path.join(PATHS.domains, 'feedback', 'README.md')}
 完成后用简短中文说明：新建了几个 signal、合并了几条、跳过了几条。
 `.trim()
 
-  return runLoopAgent({
+  const code = await runLoopAgent({
     loop: 'feedback-loop',
     prompt,
     workspace: PATHS.root,
     runtime: 'deepseek',
   })
+  if (code !== 0) return code
+
+  const check = assertFeedbackLoop(pendingIds)
+  if (!check.ok) {
+    const summary = formatAssertFailure(check)
+    console.error(`loop-engineer feedback Verify: ${summary}`)
+    appendLog({ loop: 'feedback-loop', status: 'failed', summary })
+    return 1
+  }
+  console.log(`loop-engineer feedback Verify: ${check.summary}`)
+  return 0
 }
 
 const isMain =

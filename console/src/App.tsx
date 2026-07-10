@@ -6,15 +6,18 @@ import {
   type LoopStats,
   type LoopWorker,
   type TaskSummary,
+  type TraceDetail,
+  type TraceListItem,
 } from './api'
 
-type Tab = 'mission' | 'problems' | 'contracts' | 'events' | 'approve'
+type Tab = 'mission' | 'problems' | 'contracts' | 'events' | 'trace' | 'approve'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'mission', label: 'Mission' },
   { id: 'problems', label: 'Problems' },
   { id: 'contracts', label: 'Contracts' },
   { id: 'events', label: 'Events' },
+  { id: 'trace', label: 'Trace' },
   { id: 'approve', label: 'Gate' },
 ]
 
@@ -119,6 +122,9 @@ export default function App() {
 
   const [gateTask, setGateTask] = useState<TaskSummary | null>(null)
   const [contractDrawer, setContractDrawer] = useState<ContractSummary | null>(null)
+  const [traces, setTraces] = useState<TraceListItem[]>([])
+  const [traceId, setTraceId] = useState<string | null>(null)
+  const [traceDetail, setTraceDetail] = useState<TraceDetail | null>(null)
 
   const onlineCount = useMemo(
     () => workers.filter((w) => w.status !== 'offline').length,
@@ -156,6 +162,10 @@ export default function App() {
         const c = await loopApi.contracts()
         setContracts(c.contracts)
       }
+
+      const tr = await loopApi.traces(50)
+      setTraces(tr.traces)
+      if (!traceId && tr.traces[0]) setTraceId(tr.traces[0].id)
     } catch (err) {
       setReachable(false)
       setBanner(
@@ -164,7 +174,7 @@ export default function App() {
           : '请启动 loop-engineer serve 与各 worker --loop …',
       )
     }
-  }, [contracts.length])
+  }, [contracts.length, traceId])
 
   useEffect(() => {
     if (tab !== 'contracts' || !contractKey) return
@@ -182,10 +192,29 @@ export default function App() {
   }, [tab, contractKey])
 
   useEffect(() => {
+    if (tab !== 'trace' || !traceId) return
+    void loopApi
+      .trace(traceId)
+      .then((r) => setTraceDetail(r.trace))
+      .catch(() => setTraceDetail(null))
+  }, [tab, traceId])
+
+  useEffect(() => {
     void refresh()
     const t = setInterval(() => void refresh(), 3000)
     return () => clearInterval(t)
   }, [refresh])
+
+  async function openTrace(id: string) {
+    setTraceId(id)
+    setTab('trace')
+    try {
+      const r = await loopApi.trace(id)
+      setTraceDetail(r.trace)
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : String(err))
+    }
+  }
 
   async function onSync() {
     setBusy(true)
@@ -263,7 +292,7 @@ export default function App() {
             <div className="mark" aria-hidden />
             <div>
               <h1>LOOP ENGINEER</h1>
-              <p>MISSION CONSOLE · V2.2.2 · EVENT-DRIVEN</p>
+              <p>MISSION CONSOLE · V2.2.3 · TRACE + VERIFY</p>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -498,9 +527,16 @@ export default function App() {
                           priority={t.priority} · status={t.status}
                         </div>
                         <div className="row">{t.id}</div>
-                        <div style={{ marginTop: 10 }}>
+                        <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           <button className="btn btn-approve" type="button" onClick={() => void openGate(t)}>
                             REVIEW
+                          </button>
+                          <button
+                            className="btn btn-ghost"
+                            type="button"
+                            onClick={() => void openTrace(t.source_signal || t.id)}
+                          >
+                            查看链路
                           </button>
                         </div>
                       </div>
@@ -532,6 +568,15 @@ export default function App() {
                         <div className="row">
                           {t.approved_by ? `approved_by=${t.approved_by}` : t.id}
                         </div>
+                        <div style={{ marginTop: 10 }}>
+                          <button
+                            className="btn btn-ghost"
+                            type="button"
+                            onClick={() => void openTrace(t.source_signal || t.id)}
+                          >
+                            查看链路
+                          </button>
+                        </div>
                       </div>
                     ))}
                     {problems.fixed.length === 0 ? (
@@ -553,6 +598,15 @@ export default function App() {
                       <h4>{t.title}</h4>
                       <div className="row">
                         {t.status} · {t.id}
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <button
+                          className="btn btn-ghost"
+                          type="button"
+                          onClick={() => void openTrace(t.source_signal || t.id)}
+                        >
+                          查看链路
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -641,6 +695,267 @@ export default function App() {
                 </tbody>
               </table>
               {events.length === 0 ? <p className="note">暂无事件</p> : null}
+            </div>
+          </section>
+        ) : null}
+
+        {tab === 'trace' ? (
+          <section className="view is-on">
+            <div className="note" style={{ marginBottom: 14 }}>
+              工程师可看：同步反馈 → 信号归类 → 阈值/task → 批准 →（coding 仅状态）→ DeepSeek×AC → 回访草稿。
+              <strong> 本页不展示 Cursor 代码 diff。</strong>
+            </div>
+            <div className="trace-layout">
+              <aside className="panel">
+                <div className="panel-h">
+                  <h3>TRACES</h3>
+                  <span className="pill pill-run">{traces.length}</span>
+                </div>
+                <div className="panel-b" style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                  {traces.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={`trace-item${traceId === t.id ? ' is-on' : ''}`}
+                      onClick={() => void openTrace(t.id)}
+                    >
+                      <div className="t">{t.title}</div>
+                      <div className="m">
+                        <span>{t.signalId}</span>
+                        {t.followupStatus ? (
+                          <span className="pill pill-ok">followup {t.followupStatus}</span>
+                        ) : t.verifyStatus ? (
+                          <span className="pill pill-run">verify {t.verifyStatus}</span>
+                        ) : (
+                          <span className="pill pill-wait">{t.stage}</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                  {traces.length === 0 ? (
+                    <p className="note" style={{ margin: 0 }}>
+                      暂无 signal
+                    </p>
+                  ) : null}
+                </div>
+              </aside>
+
+              <main className="panel">
+                <div className="panel-b">
+                  {!traceDetail?.signal ? (
+                    <p className="note">选择左侧一条 Trace</p>
+                  ) : (
+                    <>
+                      <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>{traceDetail.signal.title}</h2>
+                      <p className="note" style={{ marginTop: 0 }}>
+                        {traceDetail.signal.id}
+                        {traceDetail.task ? ` · ${traceDetail.task.id}` : ''} · priority{' '}
+                        {traceDetail.signal.priority}
+                      </p>
+
+                      <p className="stages-cap">闭环阶段（顺序，不是数量）</p>
+                      <div className="stages" aria-label="闭环阶段进度">
+                        {traceDetail.stages.map((s, i) => (
+                          <span key={s.id} style={{ display: 'contents' }}>
+                            {i > 0 ? <span className="stage-arrow">→</span> : null}
+                            <span
+                              className={`stage${s.done ? ' done' : ''}${s.current ? ' now' : ''}${!s.done && !s.current ? ' skip' : ''}`}
+                            >
+                              {s.label}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>已同步的反馈</h3>
+                          <span className="pill pill-ok">{traceDetail.feedbacks.length} 条反馈</span>
+                        </div>
+                        <div className="trace-sec-b">
+                          {traceDetail.feedbacks.map((f) => (
+                            <div key={f.id} className="trace-fb">
+                              <div className="id">
+                                feedback-{f.id.slice(0, 8)}… · loop_status={f.loop_status} · synced_at=
+                                {f.synced_at?.slice(0, 10) ?? '—'}
+                              </div>
+                              {f.excerpt || '（无正文摘要）'}
+                            </div>
+                          ))}
+                          {traceDetail.feedbacks.length === 0 ? (
+                            <p className="note" style={{ margin: 0 }}>
+                              尚未关联反馈
+                            </p>
+                          ) : null}
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>归类成信号</h3>
+                          <span className="pill pill-ok">
+                            1 个 signal · occ={traceDetail.signal.occurrences}
+                          </span>
+                        </div>
+                        <div className="trace-sec-b">
+                          <div className="trace-row">
+                            <span className="k">id</span>
+                            <span>{traceDetail.signal.id}</span>
+                          </div>
+                          <div className="trace-row">
+                            <span className="k">status</span>
+                            <span>{traceDetail.signal.status}</span>
+                          </div>
+                          <div className="trace-row">
+                            <span className="k">sources</span>
+                            <span>{traceDetail.signal.sources.join(', ') || '—'}</span>
+                          </div>
+                          <div className="trace-row">
+                            <span className="k">keywords</span>
+                            <span>{traceDetail.signal.keywords.join(', ') || '—'}</span>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>达任务阈值</h3>
+                          <span className={`pill ${traceDetail.threshold.met ? 'pill-ok' : 'pill-wait'}`}>
+                            {traceDetail.threshold.met ? 'threshold met' : 'not met'}
+                          </span>
+                        </div>
+                        <div className="trace-sec-b">
+                          <div className="trace-row">
+                            <span className="k">规则</span>
+                            <span>{traceDetail.threshold.rule}</span>
+                          </div>
+                          <div className="trace-row">
+                            <span className="k">task</span>
+                            <span>{traceDetail.threshold.taskId ?? '尚未出 task'}</span>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>Task 批准</h3>
+                          <span className="pill pill-run">{traceDetail.task?.status ?? '—'}</span>
+                        </div>
+                        <div className="trace-sec-b">
+                          {traceDetail.task ? (
+                            <>
+                              <div className="trace-row">
+                                <span className="k">approved_by</span>
+                                <span>{traceDetail.task.approved_by ?? '—'}</span>
+                              </div>
+                              <div className="trace-row">
+                                <span className="k">approved_at</span>
+                                <span>{traceDetail.task.approved_at ?? '—'}</span>
+                              </div>
+                              <div className="trace-row">
+                                <span className="k">priority</span>
+                                <span>{traceDetail.task.priority}</span>
+                              </div>
+                            </>
+                          ) : (
+                            <p className="note" style={{ margin: 0 }}>
+                              尚未到达
+                            </p>
+                          )}
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>Coding（仅状态）</h3>
+                          <span className="pill pill-run">{traceDetail.coding?.status ?? '—'}</span>
+                        </div>
+                        <div className="trace-sec-b">
+                          {traceDetail.coding ? (
+                            <>
+                              <div className="trace-row">
+                                <span className="k">branch</span>
+                                <span>{traceDetail.coding.branch ?? '—'}</span>
+                              </div>
+                              <div className="trace-row">
+                                <span className="k">repos</span>
+                                <span>{traceDetail.coding.repos.join(', ') || '—'}</span>
+                              </div>
+                              <div className="muted-box">
+                                本页不展示 Cursor 改了哪些代码（无 diff / 文件列表）。请在本地仓库查看该分支。
+                              </div>
+                            </>
+                          ) : (
+                            <p className="note" style={{ margin: 0 }}>
+                              尚未到达
+                            </p>
+                          )}
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>DeepSeek 对照 Acceptance</h3>
+                          <span
+                            className={`pill ${traceDetail.verification?.status === 'passed' ? 'pill-ok' : 'pill-wait'}`}
+                          >
+                            {traceDetail.verification?.status ?? '—'}
+                          </span>
+                        </div>
+                        <div className="trace-sec-b">
+                          {traceDetail.verification ? (
+                            <>
+                              {traceDetail.verification.checks.map((c) => (
+                                <div key={c} className="trace-check">
+                                  {c}
+                                </div>
+                              ))}
+                              {traceDetail.verification.commandsRun ? (
+                                <>
+                                  <p className="note" style={{ margin: '12px 0 6px' }}>
+                                    Commands Run
+                                  </p>
+                                  <pre className="trace-pre">{traceDetail.verification.commandsRun}</pre>
+                                </>
+                              ) : null}
+                            </>
+                          ) : (
+                            <p className="note" style={{ margin: 0 }}>
+                              尚未到达
+                            </p>
+                          )}
+                        </div>
+                      </section>
+
+                      <section className="trace-sec">
+                        <div className="trace-sec-h">
+                          <h3>回访草稿</h3>
+                          <span className="pill pill-wait">
+                            {traceDetail.followup
+                              ? `${traceDetail.followup.status} · 未发送`
+                              : '—'}
+                          </span>
+                        </div>
+                        <div className="trace-sec-b">
+                          {traceDetail.followup ? (
+                            <>
+                              <div className="trace-row">
+                                <span className="k">recipient</span>
+                                <span>{traceDetail.followup.recipient ?? 'null'}</span>
+                              </div>
+                              <div className="trace-draft">{traceDetail.followup.body}</div>
+                            </>
+                          ) : (
+                            <p className="note" style={{ margin: 0 }}>
+                              尚未到达
+                            </p>
+                          )}
+                        </div>
+                      </section>
+                    </>
+                  )}
+                </div>
+              </main>
             </div>
           </section>
         ) : null}

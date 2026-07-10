@@ -63,6 +63,17 @@ created_at: "…"
 
 报告写完即停。
 
+## Verify（必填）
+
+| 项 | 说明 |
+|---|---|
+| **通过条件** | `artifacts/verifications/verify-{task-id}.md` 存在；frontmatter 含 `status`；正文对每条 Acceptance 有结论；含 `## Commands Run`（可复现）；只读检查、**不**为刷绿改业务代码 |
+| **失败时读什么** | 缺报告、缺 AC 结论、仅写 `exit 1` 无摘要 |
+| **是否允许重试** | 可【人工】重跑 verify；结束前确定性自检报告完整性 |
+| **失败升级** | 报告 `failed` / 事件摘要须人类可读（命令 + 退出码 + 关键行） |
+
+**定位**：本 loop 是 coding 之后的**独立 checker**，与 coding 合同内 Verify 并存。
+
 ## 失败时怎么记录
 
-报告 `status: failed`；log 记命令与退出码。
+报告 `status: failed`；log / 事件记命令与退出码摘要。

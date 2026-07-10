@@ -61,6 +61,15 @@ Signal frontmatter 至少含：`id`、`title`、`type: bug`、`status`、`priori
 - 本轮 pending 已全部处理完 → 停止（不要无限循环）
 - 不确定是否该合并 → 宁可新建 signal，并在 log 标明「需人工复核」
 
+## Verify（必填）
+
+| 项 | 说明 |
+|---|---|
+| **通过条件** | 本轮开始时的 pending bug 均达终态（`processed` 或 `skipped`）；新建/更新的 signal 含必填 frontmatter（`id/title/type/status/priority/occurrences/sources/…`）；`processed` 的 feedback 有可追溯 `signal_id` |
+| **失败时读什么** | 仍为 `pending` 的 feedback id；缺字段的 signal 路径 |
+| **是否允许重试** | 可【人工】重跑 `feedback`；本 loop 结束前 CLI 做确定性自检，不通过则 `feedback.failed` |
+| **失败升级** | log + `feedback.failed` |
+
 ## 失败时怎么记录
 
 在 `log.md` 写 `status: failed`、失败原因、相关 feedback id。

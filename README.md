@@ -13,13 +13,17 @@
 **每个 loop 都是 AI agent**（读 `domains/*/README.md` 合同 → 读写 artifacts → 写 log）。  
 **唯一例外**：`sync` 是确定性 HTTP 同步，不做推理。
 
+每个合同含必填 **`## Verify`**（见 `domains/CONTRACT_TEMPLATE.md`）。运行时：coding 改码后强制跑检查（失败回 Agent，预算 `LOOP_CODING_VERIFY_MAX_ATTEMPTS`）；其余 loop 结束前做确定性自检。独立 **verifier loop** 仍保留（maker-checker）。
+
 | Loop | Runtime | 说明 |
 |---|---|---|
 | feedback / task / verify / followup | **DeepSeek** | Chat + tools（读写工件；verify 可读业务仓库） |
-| coding | **Cursor Agent CLI** | 改业务代码、建分支、本地 commit |
+| coding | **Cursor Agent CLI** | 改业务代码、建分支、本地 commit + 内环 Verify |
 | sync | 脚本 | 无 LLM |
 
 合入、发信、结案一律【人工】。`priority=high` 可由系统自动 `approved_by=system`；全量 `LOOP_AUTO_APPROVE` 禁止默认开启。
+
+Mission Console：**Trace** 页可只读查看 feedback → signal → 阈值/task → 批准 → coding 状态 → DeepSeek×AC → 回访草稿（**不**展示 Cursor diff）。
 
 ## 快速开始
 
@@ -67,7 +71,7 @@ loop-engineer console          # 别名 web / ui → :4011
 
 ### Web（推荐）
 
-Admin → Loop Engineer → **Gate**：Approve / Reject（仅非 high）。
+Mission Console → **Gate**：Approve / Reject（仅非 high）。**Trace** 查看完整工件链。
 
 ### 手改 md
 

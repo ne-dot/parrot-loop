@@ -59,6 +59,22 @@
 - 未批准 → 立即停
 - 最小修复完成或明确无法完成 → 停并记原因（可标 `failed`）
 
+## Verify（必填）
+
+> **合同内 Verify（内环）** ≠ 可省略末尾 **verifier loop（外环 maker-checker）**。内环保证可构建/约定检查绿；外环对照 AC 写验收报告。
+
+| 项 | 说明 |
+|---|---|
+| **通过条件** | 相关子仓库约定检查命令 exit 0（默认：存在 `npm run typecheck` 则跑之，否则 `npx tsc -b`）；**未通过不得**将 task 标为 `implemented` |
+| **失败时读什么** | 命令名、exit code、stdout/stderr 关键错误行（截断） |
+| **是否允许重试** | 是：把原始输出反馈给 Agent 再改；连续验证失败受 `LOOP_CODING_VERIFY_MAX_ATTEMPTS`（默认 3）限制 |
+| **失败升级** | 达预算 → `coding.failed` + log；**不要**假装 `implemented` |
+
+## Budget
+
+- Cursor / 工具轮次：沿用 agent 默认
+- 内环「改码→验证」连续失败：`LOOP_CODING_VERIFY_MAX_ATTEMPTS`（默认 3）
+
 ## 失败时怎么记录
 
-task 可标 `failed`；log 写原因；**不要**假装 `implemented`。
+task 可标 `failed`；log 写原因与验证摘要；**不要**假装 `implemented`。

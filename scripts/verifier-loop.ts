@@ -9,6 +9,7 @@ import { getEnv, PATHS } from './lib/env.js'
 import { appendLog } from './lib/log.js'
 import { listMarkdownFiles, readMarkdownFile } from './lib/md.js'
 import type { TaskFrontmatter } from './lib/types.js'
+import { assertVerificationReport, formatAssertFailure } from './lib/verify-artifacts.js'
 
 function parseTaskId(argv: string[]): string | null {
   for (let i = 0; i < argv.length; i += 1) {
@@ -104,7 +105,7 @@ ${gitHints}
 failed 时不要建议「已修复」回访。
 `.trim()
 
-  return runLoopAgent({
+  const code = await runLoopAgent({
     loop: 'verifier-loop',
     prompt,
     workspace: env.workspaceRoot,
@@ -112,6 +113,17 @@ failed 时不要建议「已修复」回访。
     // verify 偶发探索浪费轮次；略提高上限 + 靠 prompt 收紧
     maxRounds: Math.max(env.deepseekMaxRounds, 20),
   })
+  if (code !== 0) return code
+
+  const check = assertVerificationReport(taskId)
+  if (!check.ok) {
+    const summary = formatAssertFailure(check)
+    console.error(`loop-engineer verify Verify: ${summary}`)
+    appendLog({ loop: 'verifier-loop', status: 'failed', summary })
+    return 1
+  }
+  console.log(`loop-engineer verify Verify: ${check.summary}`)
+  return 0
 }
 
 const isMain =

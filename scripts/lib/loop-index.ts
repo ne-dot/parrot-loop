@@ -82,8 +82,19 @@ function excerpt(md: string, max = 400): string {
 }
 
 export function listContracts(): ContractSummary[] {
-  const out: ContractSummary[] = [
-    {
+  const syncReadme = path.join(PATHS.domains, 'sync', 'README.md')
+  const out: ContractSummary[] = []
+  if (existsSync(syncReadme)) {
+    const body = readFileSync(syncReadme, 'utf8')
+    out.push({
+      loop: 'sync',
+      domainPath: syncReadme,
+      title: extractTitle(body),
+      excerpt: excerpt(body),
+      body,
+    })
+  } else {
+    out.push({
       loop: 'sync',
       domainPath: '(deterministic script)',
       title: 'Sync Feedback（确定性脚本）',
@@ -91,8 +102,8 @@ export function listContracts(): ContractSummary[] {
         'sync 不是 LLM loop：从 Admin API 拉取 bug 反馈写入 artifacts/feedback。由 sync.requested 事件触发。',
       body:
         '# Sync Feedback\n\n确定性 HTTP 同步，无 LLM。\n\n触发：`sync.requested` → sync-worker → `runSyncFeedback` → `sync.completed|failed`。\n',
-    },
-  ]
+    })
+  }
 
   const seenDomains = new Set<string>()
   for (const loop of ALL_LOOPS) {

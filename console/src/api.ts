@@ -58,6 +58,65 @@ export type Invocation = {
   taskId?: string
 }
 
+export type TraceListItem = {
+  id: string
+  signalId: string
+  title: string
+  stage: string
+  taskId: string | null
+  verifyStatus: string | null
+  followupStatus: string | null
+  updatedAt: string
+}
+
+export type TraceDetail = {
+  signal: {
+    id: string
+    title: string
+    status: string
+    priority: string
+    occurrences: number
+    sources: string[]
+    keywords: string[]
+    task_id: string | null
+    body: string
+  } | null
+  feedbacks: Array<{
+    id: string
+    loop_status: string
+    synced_at: string
+    signal_id: string | null
+    excerpt: string
+  }>
+  threshold: { met: boolean; rule: string; taskId: string | null }
+  task: {
+    id: string
+    title: string
+    status: string
+    priority: string
+    approved_by: string | null
+    approved_at: string | null
+    branch: string | null
+    repos: string[]
+    body: string
+  } | null
+  coding: { status: string; branch: string | null; repos: string[] } | null
+  verification: {
+    id: string
+    status: string
+    checks: string[]
+    commandsRun: string
+    body: string
+  } | null
+  followup: {
+    status: string
+    recipient: string | null
+    feedback_id: string | null
+    body: string
+  } | null
+  stages: Array<{ id: string; label: string; done: boolean; current: boolean }>
+}
+
 const TOKEN = (import.meta.env.VITE_LOOP_API_TOKEN as string | undefined)?.trim() || ''
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -108,4 +167,8 @@ export const loopApi = {
       method: 'POST',
       body: JSON.stringify({ note }),
     }),
+  traces: (limit = 50) =>
+    api<{ ok: boolean; traces: TraceListItem[] }>(`/api/loop/traces?limit=${limit}`),
+  trace: (id: string) =>
+    api<{ ok: boolean; trace: TraceDetail }>(`/api/loop/traces/${encodeURIComponent(id)}`),
 }

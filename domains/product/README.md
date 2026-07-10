@@ -99,6 +99,15 @@ approved_at: null
 
 - 列出的合格 signal 均已处理（新建或确认已有 task）→ 停止
 
+## Verify（必填）
+
+| 项 | 说明 |
+|---|---|
+| **通过条件** | 仅为达阈值 signal 出 task；每个新建 task `status=proposed`、`approved_at=null`；正文含可勾选 `## Acceptance Criteria`；同 signal 无重复未关闭 task（已有则跳过） |
+| **失败时读什么** | 缺 AC 的 task 路径；误标 `approved`；未达阈值却新建的 task |
+| **是否允许重试** | 可【人工】重跑；结束前确定性自检，不通过 → `task.failed` |
+| **失败升级** | log + `task.failed` |
+
 ## 失败时怎么记录
 
 `log.md` 记失败原因与 signal id。

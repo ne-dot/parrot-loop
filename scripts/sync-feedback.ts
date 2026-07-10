@@ -10,6 +10,7 @@ import type {
   FeedbackFrontmatter,
   SyncState,
 } from './lib/types.js'
+import { assertSyncResult, formatAssertFailure } from './lib/verify-artifacts.js'
 
 const PAGE_SIZE = 100
 const STATUSES = ['open', 'in_progress'] as const
@@ -171,6 +172,18 @@ export async function runSyncFeedback(): Promise<number> {
 
     const summary = `同步 bug 反馈 ${items.length} 条（新建 ${written}，更新 ${updated}）；API open=${counts.open} in_progress=${counts.in_progress}`
     console.log(`loop-engineer sync: ${summary}`)
+
+    const check = assertSyncResult({ fetched: items.length, written, updated })
+    if (!check.ok) {
+      console.error(`loop-engineer sync Verify: ${formatAssertFailure(check)}`)
+      appendLog({
+        loop: 'sync-feedback',
+        status: 'failed',
+        summary: formatAssertFailure(check),
+      })
+      return 1
+    }
+
     appendLog({
       loop: 'sync-feedback',
       status: 'ok',
@@ -179,6 +192,7 @@ export async function runSyncFeedback(): Promise<number> {
         `api=${env.apiBaseUrl}`,
         `artifacts=${PATHS.feedback}`,
         `本地 feedback 文件=${listMarkdownFiles(PATHS.feedback).length}`,
+        check.summary,
       ],
     })
     return 0

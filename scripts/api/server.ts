@@ -19,6 +19,7 @@ import {
   listTasks,
   missionSnapshot,
 } from '../lib/loop-index.js'
+import { getTrace, listTraces } from '../lib/traces.js'
 import { PATHS } from '../lib/env.js'
 import { getServeEnv } from '../lib/serve-env.js'
 import { approveTask, rejectTask } from '../lib/task-gate.js'
@@ -146,6 +147,20 @@ export function createLoopApiApp() {
 
   api.get('/signals', (_req, res) => {
     res.json({ ok: true, signals: listSignals() })
+  })
+
+  api.get('/traces', (req, res) => {
+    const limit = Math.min(Number(req.query.limit ?? 50) || 50, 200)
+    res.json({ ok: true, traces: listTraces(limit) })
+  })
+
+  api.get('/traces/:id', (req, res) => {
+    const trace = getTrace(req.params.id!)
+    if (!trace) {
+      res.status(404).json({ ok: false, error: 'not found' })
+      return
+    }
+    res.json({ ok: true, trace })
   })
 
   /** 手动 SYNC NOW */

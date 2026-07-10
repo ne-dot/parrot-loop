@@ -75,6 +75,15 @@ created_at: "…"
 
 草稿写完，或因 failed 验证 / 明确跳过并记 log。
 
+## Verify（必填）
+
+| 项 | 说明 |
+|---|---|
+| **通过条件** | 写出的草稿 `status=draft`（禁止 `sent`）；verification 非 `passed` 时正文不得含「已修复/已处理完成」类话术；无 contact/email 时 `recipient: null`；frontmatter 含 `feedback_id` / `task`（或可追溯关联） |
+| **失败时读什么** | 误标 `sent`；passed 门禁未满足却写「已修复」；缺必填字段 |
+| **是否允许重试** | 可【人工】重跑；结束前确定性自检，不通过 → `followup.failed` |
+| **失败升级** | log + `followup.failed` |
+
 ## 失败时怎么记录
 
 `log.md`：`followup draft failed` + task / feedback id + 原因。

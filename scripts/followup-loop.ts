@@ -13,6 +13,7 @@ import { PATHS } from './lib/env.js'
 import { appendLog } from './lib/log.js'
 import { listMarkdownFiles, readMarkdownFile } from './lib/md.js'
 import type { FeedbackFrontmatter, TaskFrontmatter } from './lib/types.js'
+import { assertFollowupLoop, formatAssertFailure } from './lib/verify-artifacts.js'
 
 function parseTaskId(argv: string[]): string | null {
   for (let i = 0; i < argv.length; i += 1) {
@@ -133,12 +134,23 @@ ${relatedBlock}
 禁止自动发信；禁止标 sent；禁止改代码 / 合入 / Admin PATCH。
 `.trim()
 
-  return runLoopAgent({
+  const code = await runLoopAgent({
     loop: 'followup-loop',
     prompt,
     workspace: PATHS.root,
     runtime: 'deepseek',
   })
+  if (code !== 0) return code
+
+  const check = assertFollowupLoop(taskId, verify.status)
+  if (!check.ok) {
+    const summary = formatAssertFailure(check)
+    console.error(`loop-engineer followup Verify: ${summary}`)
+    appendLog({ loop: 'followup-loop', status: 'failed', summary })
+    return 1
+  }
+  console.log(`loop-engineer followup Verify: ${check.summary}`)
+  return 0
 }
 
 const isMain =

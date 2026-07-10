@@ -9,6 +9,7 @@ import { runLoopAgent } from './lib/agent.js'
 import { PATHS } from './lib/env.js'
 import { appendLog } from './lib/log.js'
 import { listEligibleSignals } from './lib/signals.js'
+import { assertTaskLoop, formatAssertFailure } from './lib/verify-artifacts.js'
 
 export async function runTaskLoop(): Promise<number> {
   const { eligible, skipped } = listEligibleSignals()
@@ -62,12 +63,23 @@ ${eligibleBlock}
 - 不要为未列出的 signal 硬造 task
 `.trim()
 
-  return runLoopAgent({
+  const code = await runLoopAgent({
     loop: 'task-loop',
     prompt,
     workspace: PATHS.root,
     runtime: 'deepseek',
   })
+  if (code !== 0) return code
+
+  const check = assertTaskLoop(eligible.map((e) => e.id))
+  if (!check.ok) {
+    const summary = formatAssertFailure(check)
+    console.error(`loop-engineer task Verify: ${summary}`)
+    appendLog({ loop: 'task-loop', status: 'failed', summary })
+    return 1
+  }
+  console.log(`loop-engineer task Verify: ${check.summary}`)
+  return 0
 }
 
 const isMain =
