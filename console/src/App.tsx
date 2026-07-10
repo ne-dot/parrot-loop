@@ -374,29 +374,14 @@ export default function App() {
                 })}
               </div>
 
-              <div
-                className="worker is-gate-wait"
-                style={{ marginTop: 12, maxWidth: 280, cursor: 'pointer' }}
-                role="button"
-                tabIndex={0}
-                onClick={() => setTab('approve')}
-              >
-                <div className="worker-orb">GATE</div>
-                <div className="worker-name">human gate</div>
-                <div className="worker-state">{problems.needsApprove.length} waiting</div>
-                <div className="worker-sub">
-                  <strong>proposed · non-high</strong>
-                  await approve
-                </div>
-                <div className="contract-hint">open gate</div>
-              </div>
-
               <div className="schedule">
                 <span>
                   sync trigger: <em>manual only</em> · Web <em>SYNC NOW</em> / CLI
                 </span>
                 <span>no 30min auto scheduler in this version</span>
-                <span>active invocations: {runningCount}</span>
+                <span>
+                  gate waiting: <em>{problems.needsApprove.length}</em> · 用右上角 Gate 审批
+                </span>
                 <span>followup-worker: {workerByLoop('followup')?.status ?? 'offline'}</span>
               </div>
             </div>
@@ -467,7 +452,7 @@ export default function App() {
                   <br />
                   IDLE = 等自己的订阅事件
                   <br />
-                  GATE = 人机中断（非严重 proposed）
+                  右上角 Gate = 非严重 proposed 人工审批
                   <br />
                   下方 = 事件总线时间线
                   <br />

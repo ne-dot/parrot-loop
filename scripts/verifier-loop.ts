@@ -40,28 +40,64 @@ export async function runVerifierLoop(argv = process.argv.slice(2)): Promise<num
     return 1
   }
 
-  const { data } = readMarkdownFile<TaskFrontmatter>(hit)
+  const { data, body } = readMarkdownFile<TaskFrontmatter>(hit)
   const env = getEnv()
+  const repos = (data.repos?.length ? data.repos : ['parrot-web-app']).join(', ')
+  const branch = data.branch || `loop/${taskId}`
+  const reportPath = path.join(PATHS.verifications, `verify-${taskId}.md`)
+  const contractPath = path.join(PATHS.domains, 'verifier', 'README.md')
+
+  // 从正文抽 Acceptance / Change Summary 前几行，减少 agent 探索
+  const acceptance =
+    /## Acceptance Criteria[\s\S]*?(?=\n## |\n---|\s*$)/i.exec(body)?.[0]?.trim().slice(0, 1200) ??
+    '(见 task 文件)'
+  const changeSummary =
+    /## Change Summary[\s\S]*?(?=\n## |\n---|\s*$)/i.exec(body)?.[0]?.trim().slice(0, 800) ??
+    '(见 task 文件)'
+
+  const gitHints = (data.repos?.length ? data.repos : ['parrot-web-app'])
+    .map(
+      (repo) =>
+        `git -C ${path.join(env.workspaceRoot, repo)} log --oneline -5 ${branch} 2>/dev/null; git -C ${path.join(env.workspaceRoot, repo)} diff main...${branch} --stat 2>/dev/null || git -C ${path.join(env.workspaceRoot, repo)} show --stat HEAD`,
+    )
+    .join('\n')
+
   const prompt = `
 你是鹦鹉工厂 Loop Engineer 的 Verifier Loop Agent（DeepSeek）。
 
-## 必须遵守
-先用 read_file 阅读：loop-engineer/domains/verifier/README.md
-（绝对路径：${path.join(PATHS.domains, 'verifier', 'README.md')}）
+## 效率硬约束（必须遵守）
+- **禁止** list_dir 工作区根或大范围扫目录（会浪费轮次）
+- 只读下列已知路径；用 run_shell 只跑下面给出的 git 命令
+- 写完验证报告 + 更新 task（若 passed）+ 追加 log 后，**立刻**调用 done(summary)
+- 目标：≤8 轮工具调用内结束
 
-## 本轮任务
-1. 读取 task：${hit}（当前 status=${data.status}）
-2. 对照 Acceptance Criteria 与 Change Summary，用 run_shell 检查相关子仓库分支 loop/${taskId} 的 diff
-   （例如：git -C parrot-web-app log / git -C parrot-web-app diff main...HEAD）。
-3. 写入验证报告：loop-engineer/artifacts/verifications/verify-${taskId}.md
-   - frontmatter：id, task, status(passed|failed|needs_human), created_at
+## 合同（可选精读，勿反复读）
+${contractPath}
+
+## 本轮已知信息（已由 CLI 解析，勿再全盘搜索）
+- task 文件：${hit}
+- task.id=${data.id}  status=${data.status}  priority=${data.priority}
+- repos: ${repos}
+- branch: ${branch}
+- 报告应写到：${reportPath}
+
+### Acceptance Criteria（摘录）
+${acceptance}
+
+### Change Summary（摘录）
+${changeSummary}
+
+## 建议命令（直接 run_shell，可按需微调）
+${gitHints}
+
+## 本轮任务（按序）
+1. 用 run_shell 检查分支/diff 是否存在且与 Change Summary 一致
+2. write_file 写出 ${reportPath}
+   - frontmatter：id: verify-${taskId}, task: ${taskId}, status: passed|failed|needs_human, created_at: ISO
    - 正文：## Checks / ## Commands Run / ## Notes
-4. 若 passed，可将 task status 更新为 verified。
-5. 追加 loop-engineer/log.md。
-6. 调用 done(summary)。
-
-## 工作区
-本 agent workspace = ${env.workspaceRoot}（含各业务子仓库与 loop-engineer/）
+3. 若 status=passed：把 task 的 status 改为 verified，写回 ${hit}
+4. 追加 ${PATHS.log} 一行摘要
+5. **立即** done(summary) —— 例如「verify passed/failed for ${taskId}」
 
 ## 硬边界
 禁止 merge main、禁止发信、禁止自动 Admin resolved。
@@ -71,9 +107,10 @@ failed 时不要建议「已修复」回访。
   return runLoopAgent({
     loop: 'verifier-loop',
     prompt,
-    // 需读业务子仓库 diff，故 workspace 为工作区根
     workspace: env.workspaceRoot,
     runtime: 'deepseek',
+    // verify 偶发探索浪费轮次；略提高上限 + 靠 prompt 收紧
+    maxRounds: Math.max(env.deepseekMaxRounds, 20),
   })
 }
 

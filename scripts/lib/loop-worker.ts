@@ -197,11 +197,15 @@ async function handleVerify(event: LoopEvent, workerId: string): Promise<void> {
 
   try {
     const code = await runVerifierLoop(['--task', taskId])
-    finishInvocation(inv.id, code === 0 ? 'ok' : 'failed', `verify exit ${code}`)
+    const invAfter = finishInvocation(inv.id, code === 0 ? 'ok' : 'failed', `verify exit ${code}`)
     if (code === 0) {
       await publishType('verify.passed', { taskId, runId: inv.id, summary: 'verify ok' })
     } else {
-      await publishType('verify.failed', { taskId, runId: inv.id, summary: `exit ${code}` })
+      await publishType('verify.failed', {
+        taskId,
+        runId: inv.id,
+        summary: invAfter?.summary ?? `exit ${code}`,
+      })
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

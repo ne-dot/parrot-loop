@@ -23,6 +23,8 @@ export type AgentRunOptions = {
    * 默认：coding → cursor；其余 → LOOP_DEFAULT_RUNTIME（deepseek）
    */
   runtime?: AgentRuntime
+  /** 覆盖 DEEPSEEK_MAX_ROUNDS（仅 deepseek） */
+  maxRounds?: number
 }
 
 function resolveAgentBin(): string {
@@ -142,8 +144,10 @@ export async function runDeepseekAgent(opts: AgentRunOptions): Promise<number> {
   ]
 
   let finalSummary = ''
+  const maxRounds =
+    opts.maxRounds && opts.maxRounds > 0 ? opts.maxRounds : env.deepseekMaxRounds
   try {
-    for (let round = 1; round <= env.deepseekMaxRounds; round += 1) {
+    for (let round = 1; round <= maxRounds; round += 1) {
       const assistant = await deepseekChat(messages)
       messages.push({
         role: 'assistant',
@@ -186,8 +190,8 @@ export async function runDeepseekAgent(opts: AgentRunOptions): Promise<number> {
       }
       if (finished) break
 
-      if (round === env.deepseekMaxRounds) {
-        throw new Error(`超过最大轮次 ${env.deepseekMaxRounds}，未调用 done`)
+      if (round === maxRounds) {
+        throw new Error(`超过最大轮次 ${maxRounds}，未调用 done`)
       }
     }
 
