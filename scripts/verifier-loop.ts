@@ -96,6 +96,7 @@ ${gitHints}
 2. write_file 写出 ${reportPath}
    - frontmatter：id: verify-${taskId}, task: ${taskId}, status: passed|failed|needs_human, created_at: ISO
    - 正文：## Checks / ## Commands Run / ## Notes
+   - Checks 每条验收结论须含英文词：passed | failed | skipped | needs_human（勿只用 ✅ / [x]）
 3. 若 status=passed：把 task 的 status 改为 verified，写回 ${hit}
 4. 追加 ${PATHS.log} 一行摘要
 5. **立即** done(summary) —— 例如「verify passed/failed for ${taskId}」

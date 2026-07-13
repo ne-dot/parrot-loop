@@ -13,6 +13,13 @@
 
 为达阈值的 active signal 生成 `status: proposed` 的 task（含复现与验收标准）。
 
+## 与 feedback 分窗的关系（需求 2.2.4）
+
+- feedback 按 **24h 分窗** 决定合并或**新建** signal；跨窗同类 Bug 会得到**新的 active signal**。
+- 本 loop **只**为 CLI 列出的 **active / 达阈值** signal 出 task；**不要** reopen 旧 signal，**不要**改写已有终态 task。
+- 同一现象可对应多个 task（每个新 signal 一份）；同 signal 仍 **至多一个未关闭** task。
+- 出 task 时在 signal `## Timeline` 追加一行；task 正文建议含 `## Timeline`（创建 proposed 一行即可，P1）。
+
 ## 输入（必须先读）
 
 1. 本合同：`domains/product/README.md`
@@ -78,10 +85,11 @@ approved_at: null
 ## 工作步骤
 
 1. 只处理 prompt 列出的合格 signal。
-2. 每个 signal 至多一个未关闭 task。
+2. 每个 signal 至多一个未关闭 task；若 signal Evidence 含 `related:` 旧 signal，新 task id 用新 slug（可带日期），**不要**复用旧 task 文件。
 3. task `status` **必须**是 `proposed`；`approved_at: null`。
 4. Acceptance Criteria 要可验证、具体。
-5. 写 log 后停止。
+5. 更新 signal：`task_id`、`status → task_created`、Timeline 追加出 task 一行。
+6. 写 log 后停止。
 
 ## 能做什么
 
@@ -94,6 +102,7 @@ approved_at: null
 - **不能**触发 coding / merge / 部署 / 发信
 - **不能**改 Admin 反馈状态
 - **不能**为未达阈值的 signal 硬出 task
+- **不能** reopen 旧 signal / 覆盖旧 task 来「续跑」同一流程
 
 ## 停止条件
 

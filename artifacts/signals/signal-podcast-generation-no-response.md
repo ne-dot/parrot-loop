@@ -13,9 +13,10 @@ keywords:
   - 生成
   - 无响应
   - 点击没反应
+  - 生成失败
 task_id: task-podcast-generation-no-response
 created_at: "2026-07-10T16:35:00.000Z"
-updated_at: "2026-07-10T17:00:00.000Z"
+updated_at: "2026-07-13T08:15:00.000Z"
 ---
 ## Summary
 
@@ -31,12 +32,11 @@ updated_at: "2026-07-10T17:00:00.000Z"
 
 ## Suggested Next Step
 
-1. 确认前端点击事件是否触发（浏览器控制台是否有报错）
-2. 检查生成播客 API 接口是否正常响应
-3. 检查前端按钮事件绑定与状态管理
-4. 达阈值后由 task loop 生成 proposed task；【人工】批准后方可 coding
+本窗已出 task 并 verified；超窗同类反馈见 `signal-podcast-generation-no-response-20260713`。
 
 ## Timeline
 
 - 2026-07-10T16:35:00.000Z created by feedback-loop
 - 2026-07-10T17:00:00.000Z task_created → task-podcast-generation-no-response (proposed)
+- 2026-07-13T07:27:00.000Z merged feedback c1de6bfe（事后按 2.2.4 超窗规则拆出）
+- 2026-07-13T08:15:00.000Z split: c1de6bfe → signal-podcast-generation-no-response-20260713（prior>24h）

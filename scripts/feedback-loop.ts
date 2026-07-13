@@ -56,8 +56,8 @@ ${path.join(PATHS.domains, 'feedback', 'README.md')}
 ## 本轮任务
 1. 处理 artifacts/feedback/ 下所有 loop_status=pending 且 type=bug 的反馈（当前约 ${pending} 条）。
 2. 对照已有 signals（当前文件：${signals.length ? signals.join(', ') : '无'}）。
-3. 语义相同的 Bug 合并进同一 signal；不同则新建。
-4. 回写每条 feedback 的 loop_status 与 signal_id。
+3. 按合同「二十四小时分窗」决定合并或新建（锚点=signal.created_at；active 始终可合并；非 active 且超 24h 必须新建，写 related，禁止 reopen）。
+4. 合并/新建均须更新 ## Timeline；回写每条 feedback 的 loop_status 与 signal_id。
 5. 追加 log.md。
 6. 调用 done(summary)。
 
@@ -65,8 +65,9 @@ ${path.join(PATHS.domains, 'feedback', 'README.md')}
 - 只改 loop-engineer/artifacts 与 log.md
 - 禁止改任何业务子仓库代码
 - 禁止发信、禁止改 Admin DB 状态、禁止创建 task
+- 禁止 reopen 旧 signal/task 绕过分窗
 
-完成后用简短中文说明：新建了几个 signal、合并了几条、跳过了几条。
+完成后用简短中文说明：新建了几个 signal、合并了几条、超窗新建几条、跳过了几条。
 `.trim()
 
   const code = await runLoopAgent({

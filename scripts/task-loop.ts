@@ -61,6 +61,7 @@ ${eligibleBlock}
 - status 只能是 proposed，禁止写成 approved
 - 禁止改业务代码；禁止 coding / 发信 / 部署 / 改 Admin 状态
 - 不要为未列出的 signal 硬造 task
+- 禁止 reopen 旧 signal / 覆盖旧 task；跨窗同类问题由 feedback 新建 signal，本轮只为列出的新 signal 出 task
 `.trim()
 
   const code = await runLoopAgent({

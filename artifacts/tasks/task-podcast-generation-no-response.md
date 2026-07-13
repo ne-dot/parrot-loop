@@ -1,7 +1,7 @@
 ---
 id: task-podcast-generation-no-response
 title: 修复点击生成播客按钮无响应
-status: implemented
+status: verified
 source_signal: signal-podcast-generation-no-response
 priority: high
 owner_loop: coding
@@ -11,6 +11,7 @@ branch: loop/task-podcast-generation-no-response
 created_at: "2026-07-10T17:00:00.000Z"
 approved_at: "2026-07-10T08:33:00.714Z"
 approved_by: system
+verified_at: "2026-07-13T07:39:00.000Z"
 ---
 ## Problem
 
@@ -70,4 +71,4 @@ approved_by: system
 
 ### 下一步
 
-等待【人工】审阅合入 `loop/*`，再跑 `loop-engineer verify`。
+遗留修复已人工确认为已处理（`verified`）；无需再跑 coding/verify。

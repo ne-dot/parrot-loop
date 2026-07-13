@@ -448,3 +448,153 @@
 
 - status: `failed`
 - 超过最大轮次 12，未调用 done
+
+## 2026-07-12 22:29 — sync-feedback
+
+- status: `failed`
+- fetch failed
+
+## 2026-07-13 15:27 — sync-feedback
+
+- status: `ok`
+- 同步 bug 反馈 1 条（新建 1，更新 0）；API open=1 in_progress=0
+  - api=http://localhost:4001
+  - artifacts=/Users/zj/Desktop/ai-parrot/loop-engineer/artifacts/feedback
+  - 本地 feedback 文件=4
+  - sync ok：fetched=1 written=1 updated=0 files=4
+
+## 2026-07-13 15:30 — feedback-loop
+
+- status: `ok`
+- 处理 1 条 pending：新建 signal 0，合并 1，跳过 0
+  - c1de6bfe-93bd-4712-ac97-afa58531e806 → merge signal-podcast-generation-no-response（"生成播客失败，赶紧修复" 与已有 signal「点击生成播客按钮无响应，无法生成播客」语义相同，均为播客生成阶段故障；occurrences=1→2）
+
+## 2026-07-13 15:28 — feedback-loop
+
+- status: `ok`
+- DeepSeek agent 执行结束：## 本轮反馈处理摘要
+
+- **新建 signal**: 0 个
+- **合并**: 1 条 — feedback-c1de6bfe-93bd-4712-ac97-afa58531e806（"生成播客失败，赶紧修复"）→ 合并至 signal-podcast-generation-no-response（语义相同：均为播客生成阶段故障；occurrences 1→2）
+- **跳过**: 0 条
+- **处理反馈**: feedback-c1de6bfe → loop_status=processed, signal_id=signal-podcast-generation-no-response
+
+更新了 signal 的 sources、occurrences、Evidence、Timeline 及 updated_at。
+
+## 2026-07-13 15:28 — task-loop
+
+- status: `skipped`
+- 无达阈值 signal，不出 task（跳过 3 个）
+  - signal-abc: status=task_created
+  - signal-podcast-generation-no-response: status=task_created
+  - signal-podcast-segment-audio-playback: status=task_created
+
+## 2026-07-13 15:28 — task-route
+
+- status: `ok`
+- after task-loop
+  - proposed=1
+  - autoApproved(high)=0
+
+## 2026-07-13 16:16 — docs/2.2.4
+
+- status: `ok`
+- 实现需求 2.2.4：24h 分窗 + Timeline；feedback/product 合同；signal-window + Verify
+- 拆分历史超窗误合并：c1de6bfe → signal-podcast-generation-no-response-20260713（active, high）
+
+## 2026-07-13 16:23 — sync-feedback
+
+- status: `ok`
+- 同步 bug 反馈 2 条（新建 1，更新 1）；API open=2 in_progress=0
+  - api=http://localhost:4001
+  - artifacts=/Users/zj/Desktop/ai-parrot/loop-engineer/artifacts/feedback
+  - 本地 feedback 文件=5
+  - sync ok：fetched=2 written=1 updated=1 files=5
+
+## 2026-07-13 16:30 — feedback-loop
+
+- status: `ok`
+- 处理 1 条 pending：新建 signal 0，合并 1，跳过 0
+  - 6aa78450-dfd7-4e2c-8b48-3df7b90f4c6a → merge signal-podcast-generation-no-response-20260713（"播客无法生成，请尽快解决" 与已有 signal「生成播客失败（复发窗 2026-07-13）」语义相同，均为播客生成阶段故障；status=active，合并；occurrences=1→2）
+
+## 2026-07-13 16:24 — feedback-loop
+
+- status: `ok`
+- DeepSeek agent 执行结束：## 本轮反馈处理摘要
+
+- **新建 signal**: 0 个
+- **合并**: 1 条 — feedback-6aa78450-dfd7-4e2c-8b48-3df7b90f4c6a（"播客无法生成，请尽快解决"）→ 合并至 signal-podcast-generation-no-response-20260713（语义相同：均为播客生成阶段故障；目标 signal status=active，直接合并；occurrences 1→2）
+- **跳过**: 0 条
+- **处理反馈**: feedback-6aa78450 → loop_status=processed, signal_id=signal-podcast-generation-no-response-20260713
+
+更新了 signal 的 sources、occurrences、Evidence、Timeline 及 updated_at。
+
+## 2026-07-13 16:30 — task-loop
+
+- status: `ok`
+- 新建 task 1 个
+  - signal-podcast-generation-no-response-20260713 → task-podcast-generation-no-response-20260713（title: 修复生成播客失败（复发窗 2026-07-13）；priority: high；达阈值原因: priority=high, occurrences=2）
+
+## 2026-07-13 16:25 — task-loop
+
+- status: `ok`
+- DeepSeek agent 执行结束：## Task Loop 执行摘要
+
+**处理 signal**: 1 个
+- `signal-podcast-generation-no-response-20260713`（生成播客失败，复发窗 2026-07-13）— priority=high, occurrences=2，达阈值
+
+**新建 task**: 1 个
+- `task-podcast-generation-no-response-20260713`（修复生成播客失败（复发窗 2026-07-13））— status=proposed，待【人工】批准后触发 coding
+
+**更新内容**:
+1. ✅ 新建 `artifacts/tasks/task-podcast-generation-no-response-20260713.md`（含 Problem / Evidence / Reproduction / Acceptance Criteria / Human Approval 门禁）
+2. ✅ 更新 signal：task_id → task-podcast-generation-no-response-20260713，status → task_created，updated_at 更新，Timeline 追加一行
+3. ✅ 追加 log.md 记录本次操作
+
+**注意**: 旧窗 task（task-podcast-generation-no-response）已 verified，本窗为新 24h 分窗独立 task，slug 带日期后缀以示区分。旧窗修复（commit e0021d8）若未合入 main 可能是本窗根因之一，已在 Reproduction 中注明需先确认。
+
+**下一步**: 【人工】审阅 task 文件，将 status 改为 approved 后，运行 `loop-engineer coding --task task-podcast-generation-no-response-20260713`
+
+## 2026-07-13 16:25 — gate
+
+- status: `ok`
+- task task-podcast-generation-no-response-20260713 approved_by=system
+  - priority=high auto-approve
+
+## 2026-07-13 16:25 — task-route
+
+- status: `ok`
+- after task-loop
+  - proposed=2
+  - autoApproved(high)=1
+
+## 2026-07-13 16:28 — coding
+
+- status: `ok`
+- task: task-podcast-generation-no-response-20260713 → `implemented`
+- branch: `loop/task-podcast-generation-no-response-20260713`
+- repos: parrot-server（移除未入库联调埋点 throw）, parrot-web-app（commit `0b6ec5f` 提交态/错误 toast）
+- verify: web-app `npx tsc -b` ok；server `npm run typecheck` ok
+- 根因: 旧窗已合入 main；本窗为 generation 创建路由 INTENTIONAL BUG 埋点导致恒失败
+
+## 2026-07-13 16:28 — coding-loop
+
+- status: `ok`
+- Cursor agent 执行结束（exit 0）
+
+## 2026-07-13 16:28 — coding-loop
+
+- status: `ok`
+- implemented + coding Verify ok：parrot-server(`npm run typecheck`), parrot-web-app(`npx tsc -b --pretty false`)
+
+- 2026-07-13T08:29:17Z | verify | task-podcast-generation-no-response-20260713 | passed | 旧窗修复已合入，新根因为 server 本地注入埋点已丢弃；web-app 提交态分离；代码审查与 git diff 一致
+
+## 2026-07-13 16:29 — verifier-loop
+
+- status: `ok`
+- DeepSeek agent 执行结束：verify passed for task-podcast-generation-no-response-20260713。旧窗修复已合入 main，新根因（server 本地注入的 INTENTIONAL BUG）已丢弃；web-app 提交态与生成态分离、错误提示增强。代码审查与 git diff 均与 Change Summary 一致，所有 AC 满足。task 状态已更新为 verified，log 已追加。
+
+## 2026-07-13 16:29 — verifier-loop
+
+- status: `failed`
+- verifier Verify 失败：报告不完整（verify-task-podcast-generation-no-response-20260713.md）；Checks 中未见 passed/failed/skipped/needs_human

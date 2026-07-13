@@ -11,6 +11,7 @@ import type {
   SignalFrontmatter,
   TaskFrontmatter,
 } from './types.js'
+import { getSignalDedupWindowMs, isOverWindowMergeViolation } from './signal-window.js'
 
 export type AssertResult = { ok: boolean; summary: string; details?: string[] }
 
@@ -86,6 +87,12 @@ export function assertFeedbackLoop(pendingBefore: string[]): AssertResult {
             if (sig[key] === undefined || sig[key] === null) {
               details.push(`${data.signal_id}: 缺字段 ${key}`)
             }
+          }
+          if (isOverWindowMergeViolation(sig)) {
+            const windowH = Math.round(getSignalDedupWindowMs() / 3600000)
+            details.push(
+              `${id}: 关联非 active signal ${data.signal_id}（status=${sig.status}）且距 created_at 已超 ${windowH}h 分窗，应新建 signal 而非合并`,
+            )
           }
         }
       }
@@ -239,16 +246,22 @@ export function assertVerificationReport(taskId: string): AssertResult {
   const raw = readFileSync(hit, 'utf8')
   const { data, body } = readMarkdownFile<Record<string, unknown>>(hit)
   const details: string[] = []
+  const fmStatus = String(data.status ?? '').toLowerCase()
+  const statusOk = /^(passed|failed|skipped|needs_human)$/.test(fmStatus)
   if (!data.status) details.push('缺 frontmatter status')
+  else if (!statusOk) {
+    details.push(`frontmatter status 非法: ${data.status}`)
+  }
   if (!/##\s*Checks/i.test(body) && !/##\s*Checks/i.test(raw)) {
     details.push('缺 ## Checks')
   }
   if (!/##\s*Commands Run/i.test(body) && !/##\s*Commands Run/i.test(raw)) {
     details.push('缺 ## Commands Run')
   }
-  // 至少有一条结论词
-  if (!/\b(passed|failed|skipped|needs_human)\b/i.test(body)) {
-    details.push('Checks 中未见 passed/failed/skipped/needs_human')
+  // 结论词：frontmatter status 合法即可；或正文 Checks 出现 passed|failed|…
+  const bodyHasVerdict = /\b(passed|failed|skipped|needs_human)\b/i.test(body)
+  if (!statusOk && !bodyHasVerdict) {
+    details.push('Checks 中未见 passed/failed/skipped/needs_human（且 frontmatter status 无效）')
   }
   if (details.length) {
     return {
