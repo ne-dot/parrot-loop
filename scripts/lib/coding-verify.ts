@@ -36,7 +36,7 @@ function truncate(s: string, max = 4000): string {
 
 export function runCodingVerify(task: TaskFrontmatter): CodingVerifyResult {
   const env = getEnv()
-  const repos = task.repos?.length > 0 ? task.repos : ['parrot-web-app']
+  const repos = task.repos?.length > 0 ? task.repos : env.defaultRepos
   const outputs: CodingVerifyResult['outputs'] = []
 
   for (const repo of repos) {

@@ -25,7 +25,7 @@
 
 | 产物 | 说明 |
 |---|---|
-| Git 分支 | `loop/{task-id}`（落在相关子仓库，如 `parrot-web-app`） |
+| Git 分支 | `loop/{task-id}`（落在 task.repos 指定的仓库） |
 | 代码 diff | 最小改动 |
 | Task | `in_progress` → `implemented`；`branch` / `repos`；`## Change Summary` |
 | `log.md` | 追加 |

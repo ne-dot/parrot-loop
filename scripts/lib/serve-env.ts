@@ -16,7 +16,7 @@ export function getServeEnv(): ServeEnv {
   const base = getEnv()
   const port = Number(process.env.LOOP_SERVE_PORT ?? 4010)
   const host = (process.env.LOOP_SERVE_HOST ?? '127.0.0.1').trim() || '127.0.0.1'
-  const redisUrl = (process.env.LOOP_REDIS_URL ?? 'redis://127.0.0.1:6379').trim()
+  const redisUrl = (process.env.LOOP_REDIS_URL ?? 'redis://127.0.0.1:6380').trim()
   const apiToken = process.env.LOOP_API_TOKEN?.trim() || null
   const corsOrigin = (
     process.env.LOOP_CORS_ORIGIN ?? 'http://127.0.0.1:4011,http://localhost:4011'

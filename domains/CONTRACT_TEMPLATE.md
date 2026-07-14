@@ -64,6 +64,12 @@
 
 - …
 
-## 失败时怎么记录
+## 失败时的留痕
 
-- …
+> **`log.md` 不是只记失败**：成功（`ok`）、跳过（`skipped`）、失败（`failed`）都会追加。  
+> 本节只规定：**失败时**还要写清什么（原因、相关 id），以及是否发事件 `*.failed`。
+
+- `log.md`：`status: failed` + 可读原因 + 相关 feedback/signal/task id  
+- 事件（若走 worker）：发对应 `*.failed`（如 `task.failed`）  
+- （可选）【人工】跟进说明
+

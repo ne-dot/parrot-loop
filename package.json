@@ -1,11 +1,26 @@
 {
   "name": "loop-engineer",
   "version": "0.1.0",
-  "description": "Parrot Factory Loop Engineer — feedback → signal → task → coding → verifier → followup",
-  "private": true,
+  "description": "Semi-automatic feedback → signal → task → coding → verify → followup loop with Mission Console",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "loop-engineer": "./bin/loop-engineer.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ne-dot/parrot-loop.git"
+  },
+  "keywords": [
+    "agent",
+    "feedback",
+    "bug-loop",
+    "cursor",
+    "deepseek",
+    "mission-console"
+  ],
+  "engines": {
+    "node": ">=20"
   },
   "scripts": {
     "loop-engineer": "tsx scripts/cli.ts",
@@ -24,9 +39,6 @@
     "console:dev": "tsx scripts/cli.ts console",
     "console:build": "npm --prefix console run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "engines": {
-    "node": ">=20"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

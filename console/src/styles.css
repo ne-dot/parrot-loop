@@ -314,6 +314,53 @@
         border-color: rgba(56,189,248,0.55);
         box-shadow: 0 0 28px rgba(56,189,248,0.2);
       }
+      /* DEMO cascade — 强样式，录完删 */
+      .worker.is-cascade-on {
+        opacity: 1 !important;
+        transform: translateY(-3px) !important;
+        border-color: rgba(56, 189, 248, 0.9) !important;
+        box-shadow:
+          0 0 0 2px rgba(56, 189, 248, 0.55),
+          0 0 48px rgba(56, 189, 248, 0.55) !important;
+      }
+      .worker.is-script.is-cascade-on {
+        border-color: rgba(167, 139, 250, 0.95) !important;
+        box-shadow:
+          0 0 0 2px rgba(167, 139, 250, 0.55),
+          0 0 48px rgba(167, 139, 250, 0.55) !important;
+      }
+      .worker.is-cascade-on .worker-state {
+        color: var(--cyan-hot) !important;
+      }
+      .worker.is-cascade-on .worker-orb {
+        border-color: rgba(56, 189, 248, 0.9) !important;
+        color: var(--cyan-hot) !important;
+        box-shadow: 0 0 28px rgba(56, 189, 248, 0.65) !important;
+        animation: orb-pulse 0.8s ease-in-out infinite !important;
+      }
+      .worker.is-script.is-cascade-on .worker-orb {
+        border-color: rgba(167, 139, 250, 0.95) !important;
+        color: var(--violet) !important;
+        box-shadow: 0 0 28px rgba(167, 139, 250, 0.65) !important;
+      }
+      .worker.is-cascade-done {
+        opacity: 0.95 !important;
+        border-color: rgba(52, 211, 153, 0.7) !important;
+        box-shadow: 0 0 22px rgba(52, 211, 153, 0.35) !important;
+        transform: none !important;
+      }
+      .worker.is-cascade-done .worker-state {
+        color: #34d399 !important;
+      }
+      .worker.is-cascade-done .worker-orb {
+        border-color: rgba(52, 211, 153, 0.7) !important;
+        color: #34d399 !important;
+        box-shadow: 0 0 16px rgba(52, 211, 153, 0.35) !important;
+        animation: none !important;
+      }
+      .worker.is-cascade-wait {
+        opacity: 0.4 !important;
+      }
       .worker.is-idle {
         opacity: 0.65;
       }

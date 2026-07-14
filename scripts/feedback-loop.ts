@@ -47,7 +47,7 @@ export async function runFeedbackLoop(): Promise<number> {
   const pendingIds = listPendingBugIds()
   const signals = listSignalIds()
   const prompt = `
-你是鹦鹉工厂 Loop Engineer 的 Feedback Loop Agent。
+你是 Loop Engineer 的 Feedback Loop Agent。
 
 ## 必须遵守的合同
 先用 read_file 完整阅读并遵守：

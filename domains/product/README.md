@@ -13,12 +13,12 @@
 
 为达阈值的 active signal 生成 `status: proposed` 的 task（含复现与验收标准）。
 
-## 与 feedback 分窗的关系（需求 2.2.4）
+## 与 feedback 分窗的关系（24h 分窗）
 
 - feedback 按 **24h 分窗** 决定合并或**新建** signal；跨窗同类 Bug 会得到**新的 active signal**。
 - 本 loop **只**为 CLI 列出的 **active / 达阈值** signal 出 task；**不要** reopen 旧 signal，**不要**改写已有终态 task。
 - 同一现象可对应多个 task（每个新 signal 一份）；同 signal 仍 **至多一个未关闭** task。
-- 出 task 时在 signal `## Timeline` 追加一行；task 正文建议含 `## Timeline`（创建 proposed 一行即可，P1）。
+- 出 task 时在 signal `## Timeline` 追加一行；task 正文建议含 `## Timeline`（创建 proposed 一行即可）。
 
 ## 输入（必须先读）
 

@@ -6,16 +6,30 @@
 
 ## 你是谁
 
-确定性同步工具：从 Admin API 拉取 `type=bug` 反馈，写入 `artifacts/feedback/`。
+确定性同步工具：从配置的 Feedback HTTP API 拉取反馈，写入 `artifacts/feedback/`。
 
 ## 目标
 
-本地 feedback 工件与 Admin 开放中的 bug 列表对齐，供 feedback-loop 消费。
+本地 feedback 工件与上游开放中的反馈列表对齐，供 feedback-loop 消费。
 
 ## 输入
 
-1. `LOOP_API_BASE_URL` + `LOOP_ADMIN_COOKIE`
-2. Admin `GET /api/admin/feedback?type=bug&status=open|in_progress`
+1. `LOOP_API_BASE_URL` + `LOOP_FEEDBACK_LIST_PATH` + `LOOP_ADMIN_COOKIE`
+2. `GET {LOOP_FEEDBACK_LIST_PATH}?type={LOOP_FEEDBACK_TYPE}&status={LOOP_FEEDBACK_STATUSES}`
+
+期望响应形状（camelCase）：
+
+```json
+{
+  "ok": true,
+  "feedback": [{ "id", "userId", "type", "content", "contact", "status", "createdAt", "updatedAt", "userEmail", ... }],
+  "page": 1,
+  "pageSize": 100,
+  "total": 0
+}
+```
+
+也可跳过 HTTP：手动写入 `artifacts/feedback/*.md` 后直接跑后续 loop。
 
 ## 输出
 

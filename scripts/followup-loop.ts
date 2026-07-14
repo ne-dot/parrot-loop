@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runLoopAgent } from './lib/agent.js'
-import { PATHS } from './lib/env.js'
+import { getEnv, PATHS } from './lib/env.js'
 import { appendLog } from './lib/log.js'
 import { listMarkdownFiles, readMarkdownFile } from './lib/md.js'
 import type { FeedbackFrontmatter, TaskFrontmatter } from './lib/types.js'
@@ -88,6 +88,7 @@ export async function runFollowupLoop(argv = process.argv.slice(2)): Promise<num
   }
 
   const { data: task } = readMarkdownFile<TaskFrontmatter>(hit)
+  const env = getEnv()
   const verify = readVerificationStatus(taskId)
   const related = listRelatedFeedback(task.source_signal)
 
@@ -112,7 +113,7 @@ export async function runFollowupLoop(argv = process.argv.slice(2)): Promise<num
           .join('\n')
 
   const prompt = `
-你是鹦鹉工厂 Loop Engineer 的 Followup Loop Agent（DeepSeek）。
+你是 Loop Engineer 的 Followup Loop Agent（DeepSeek）。
 
 ## 必须遵守
 先用 read_file 完整阅读：${path.join(PATHS.domains, 'followup', 'README.md')}
@@ -127,8 +128,9 @@ ${relatedBlock}
 1. 按合同门禁为关联 feedback 写入 artifacts/followups/followup-{feedback_id}.md（status: draft）。
 2. verification 为 passed：可写已处理说明 + 如何验证；无 email/contact 时写 Admin 备注向结案文案，recipient: null。
 3. verification 为 failed / 缺失：禁止「已修复」话术；可写「仍在跟进」或跳过并记 log。
-4. 追加 ${PATHS.log}，明确「待人工发送」与结案手顺提醒。
-5. 调用 done(summary)。
+4. 草稿落款使用：${env.followupSignOff}
+5. 追加 ${PATHS.log}，明确「待人工发送」与结案手顺提醒。
+6. 调用 done(summary)。
 
 ## 硬边界
 禁止自动发信；禁止标 sent；禁止改代码 / 合入 / Admin PATCH。

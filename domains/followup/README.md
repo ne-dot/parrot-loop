@@ -46,9 +46,10 @@ created_at: "…"
 ……（简短感谢 + 处理说明 + 如何验证；不暴露内部 signal/task id、不泄露其他用户 PII）
 
 感谢你的反馈。
-——鹦鹉工厂
+—— Loop Engineer
 ```
 
+> 落款可由环境变量 `LOOP_FOLLOWUP_SIGN_OFF` 覆盖；Agent 写草稿时应与合同/配置一致。
 ## 能做什么
 
 - 读写 `artifacts/followups/`

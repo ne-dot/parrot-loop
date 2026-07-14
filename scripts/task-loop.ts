@@ -39,7 +39,7 @@ export async function runTaskLoop(): Promise<number> {
     .join('\n')
 
   const prompt = `
-你是鹦鹉工厂 Loop Engineer 的 Task Loop Agent（product domain）。
+你是 Loop Engineer 的 Task Loop Agent（product domain）。
 
 ## 必须遵守
 先用 read_file 完整阅读并遵守：

@@ -105,7 +105,7 @@ const ALIASES: Record<string, string> = {
 
 function printHelp(): void {
   const lines = [
-    'loop-engineer — Parrot Factory Loop Engineer CLI',
+    'loop-engineer — Feedback → Signal → Task → Coding → Verify → Followup CLI',
     '',
     '用法:',
     '  loop-engineer <command> [args...]',

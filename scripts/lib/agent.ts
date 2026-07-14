@@ -129,7 +129,7 @@ export async function runDeepseekAgent(opts: AgentRunOptions): Promise<number> {
   console.log(`  base=${env.deepseekBaseUrl}`)
   console.log(`  workspace=${workspace}`)
 
-  const system = `你是鹦鹉工厂 Loop Engineer 的执行 agent（DeepSeek）。
+  const system = `你是 Loop Engineer 的执行 agent（DeepSeek）。
 你必须通过工具完成任务：list_dir / read_file / write_file / run_shell / done。
 工作区：${workspace}
 规则：

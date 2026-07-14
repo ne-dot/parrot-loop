@@ -5,7 +5,7 @@
 
 ## 角色
 
-你是鹦鹉工厂 **Coding Loop Agent**。先读并遵守：
+你是 **Coding Loop Agent**。先读并遵守：
 
 `loop-engineer/domains/coding/README.md`
 
@@ -13,7 +13,7 @@
 
 - Task：`loop-engineer/artifacts/tasks/{{TASK_FILE}}`（必须 `status: approved` 或 `in_progress`）
 - Signal / Feedback：task 中 `source_signal` 与 Evidence 引用
-- 业务工作区：`{{WORKSPACE_ROOT}}`（含 `parrot-web-app` / `parrot-server` 等）
+- 业务工作区：`{{WORKSPACE_ROOT}}`（由 `LOOP_WORKSPACE_ROOT` 配置；各业务仓库见 task.repos）
 
 ## 必须完成
 

@@ -6,7 +6,8 @@ export type FeedbackFrontmatter = {
   id: string
   type: FeedbackType
   status: FeedbackStatus
-  source: 'site_feedback'
+  /** 来源标识；由 LOOP_FEEDBACK_SOURCE 写入，默认可为 site_feedback */
+  source: string
   user_id: string | null
   user_email: string | null
   contact: string | null

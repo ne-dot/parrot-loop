@@ -51,7 +51,7 @@ ${verifyFeedback}
     : ''
 
   return `
-你是鹦鹉工厂 Loop Engineer 的 Coding Loop Agent（Cursor）。
+你是 Loop Engineer 的 Coding Loop Agent（Cursor）。
 
 ## 必须遵守的合同与模板
 1. ${path.join(PATHS.domains, 'coding', 'README.md')}

@@ -5,6 +5,9 @@ state/invocations/
 state/events/
 state/workers/
 
+# 本地运行审计日志（可含绝对路径 / 内部细节）
+log.md
+
 # 含用户原文 / 联系方式的工件（勿提交；保留 .gitkeep）
 artifacts/feedback/**
 !artifacts/feedback/.gitkeep

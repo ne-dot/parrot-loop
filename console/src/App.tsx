@@ -84,6 +84,14 @@ const WORKER_META: Record<
 
 const DISPLAY_LOOPS = ['sync', 'feedback', 'task', 'coding', 'verify', 'followup'] as const
 
+/** DEMO only — 录完删 */
+let demoCascadeTimers: Array<ReturnType<typeof setTimeout>> = []
+
+function clearDemoCascadeTimers() {
+  for (const t of demoCascadeTimers) clearTimeout(t)
+  demoCascadeTimers = []
+}
+
 function fmtTime(iso: string): string {
   try {
     return iso.slice(11, 19)
@@ -119,6 +127,8 @@ export default function App() {
   const [contractKey, setContractKey] = useState('feedback')
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState('')
+  /** DEMO：-1 关闭；0..5 当前点亮。录完删 */
+  const [demoStep, setDemoStep] = useState(-1)
 
   const [gateTask, setGateTask] = useState<TaskSummary | null>(null)
   const [contractDrawer, setContractDrawer] = useState<ContractSummary | null>(null)
@@ -200,10 +210,42 @@ export default function App() {
   }, [tab, traceId])
 
   useEffect(() => {
+    // DEMO 播放中禁止 refresh，否则会重渲染冲掉观感
+    if (demoStep >= 0) return
     void refresh()
     const t = setInterval(() => void refresh(), 3000)
     return () => clearInterval(t)
-  }, [refresh])
+  }, [refresh, demoStep])
+
+  function startDemoCascade() {
+    // DEMO：只播动画，不调真实 sync（录完可删）
+    clearDemoCascadeTimers()
+    const total = DISPLAY_LOOPS.length
+    setDemoStep(0)
+    for (let i = 1; i < total; i++) {
+      demoCascadeTimers.push(
+        setTimeout(() => {
+          setDemoStep(i)
+        }, i * 900),
+      )
+    }
+    demoCascadeTimers.push(
+      setTimeout(() => {
+        setDemoStep(-1)
+        clearDemoCascadeTimers()
+      }, total * 900 + 1500),
+    )
+  }
+
+  // DEMO：刷新后约 2s 自动播放级联动画（录完可删）
+  useEffect(() => {
+    const t = window.setTimeout(() => startDemoCascade(), 2000)
+    return () => {
+      window.clearTimeout(t)
+      clearDemoCascadeTimers()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount once
+  }, [])
 
   async function openTrace(id: string) {
     setTraceId(id)
@@ -216,18 +258,8 @@ export default function App() {
     }
   }
 
-  async function onSync() {
-    setBusy(true)
-    setToast('')
-    try {
-      const r = await loopApi.sync()
-      setToast(`已发 ${r.event.type}`)
-      await refresh()
-    } catch (err) {
-      setToast(err instanceof Error ? err.message : String(err))
-    } finally {
-      setBusy(false)
-    }
+  function onSync() {
+    startDemoCascade()
   }
 
   async function openContract(loop: string) {
@@ -349,27 +381,39 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn" type="button" disabled={busy || !reachable} onClick={() => void onSync()}>
+                  <button className="btn" type="button" disabled={busy} onClick={() => void onSync()}>
                     SYNC NOW
                   </button>
                 </div>
               </div>
 
               <div className="workers">
-                {DISPLAY_LOOPS.map((loop) => {
+                {DISPLAY_LOOPS.map((loop, loopIndex) => {
                   const meta = WORKER_META[loop]!
                   const w = workerByLoop(loop)
                   const status = w?.status ?? 'offline'
-                  const cls =
-                    status === 'running' ? 'is-running' : status === 'offline' ? 'is-idle' : 'is-idle'
-                  const clickable = meta.hasContract
+                  const inDemo = demoStep >= 0
+                  const isOn = inDemo && loopIndex === demoStep
+                  const isDone = inDemo && loopIndex < demoStep
+                  const isWait = inDemo && loopIndex > demoStep
+                  const cls = isOn
+                    ? 'is-cascade-on'
+                    : isDone
+                      ? 'is-cascade-done'
+                      : isWait
+                        ? 'is-cascade-wait'
+                        : status === 'running'
+                          ? 'is-running'
+                          : 'is-idle'
+                  const displayState = isOn ? 'running' : isDone ? 'ok' : status
+                  const clickable = meta.hasContract && !inDemo
                   const kindCls = meta.kind === 'script' ? 'is-script' : 'is-agent'
                   return (
                     <div
                       key={loop}
                       className={`worker ${cls} ${kindCls}`}
                       style={{
-                        ...(status === 'offline' ? { opacity: 0.55 } : {}),
+                        ...(!inDemo && status === 'offline' ? { opacity: 0.55 } : {}),
                         ...(clickable ? {} : { cursor: 'default' }),
                       }}
                       role={clickable ? 'button' : undefined}
@@ -390,12 +434,19 @@ export default function App() {
                       </div>
                       <div className="worker-orb">{meta.orb}</div>
                       <div className="worker-name">{meta.name}</div>
-                      <div className="worker-state">{status}</div>
+                      <div className="worker-state">{displayState}</div>
                       <div className="worker-sub">
                         <strong>{meta.on}</strong>
                         {meta.kind === 'script'
                           ? 'deterministic fetch · no LLM'
-                          : w?.lastEventType ?? (status === 'offline' ? 'worker offline' : 'waiting event')}
+                          : isOn
+                            ? 'invoking…'
+                            : isDone
+                              ? 'completed'
+                              : isWait
+                                ? 'waiting…'
+                                : (w?.lastEventType ??
+                                  (status === 'offline' ? 'worker offline' : 'waiting event'))}
                       </div>
                       {meta.hasContract ? <div className="contract-hint">view contract</div> : null}
                     </div>

@@ -65,7 +65,7 @@ Signal frontmatter 至少含：`id`、`title`、`type: bug`、`status`、`priori
 
 ## 不能做什么（硬边界）
 
-- **不能**修改 `parrot-web-app` / `parrot-server` / `parrot-admin-app` / `SiteKit` / `AuthKit` 等业务代码
+- **不能**修改业务代码仓库（`LOOP_WORKSPACE_ROOT` 下的项目）
 - **不能**回复用户、发信、站内信
 - **不能**删除或改写 DB 原始反馈（你只动磁盘工件）
 - **不能**把 Admin 反馈标为 `resolved`

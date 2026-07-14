@@ -43,8 +43,10 @@ export async function runVerifierLoop(argv = process.argv.slice(2)): Promise<num
 
   const { data, body } = readMarkdownFile<TaskFrontmatter>(hit)
   const env = getEnv()
-  const repos = (data.repos?.length ? data.repos : ['parrot-web-app']).join(', ')
+  const repoList = data.repos?.length ? data.repos : env.defaultRepos
+  const repos = repoList.join(', ')
   const branch = data.branch || `loop/${taskId}`
+  const baseBranch = env.defaultBranch
   const reportPath = path.join(PATHS.verifications, `verify-${taskId}.md`)
   const contractPath = path.join(PATHS.domains, 'verifier', 'README.md')
 
@@ -56,15 +58,15 @@ export async function runVerifierLoop(argv = process.argv.slice(2)): Promise<num
     /## Change Summary[\s\S]*?(?=\n## |\n---|\s*$)/i.exec(body)?.[0]?.trim().slice(0, 800) ??
     '(见 task 文件)'
 
-  const gitHints = (data.repos?.length ? data.repos : ['parrot-web-app'])
+  const gitHints = repoList
     .map(
       (repo) =>
-        `git -C ${path.join(env.workspaceRoot, repo)} log --oneline -5 ${branch} 2>/dev/null; git -C ${path.join(env.workspaceRoot, repo)} diff main...${branch} --stat 2>/dev/null || git -C ${path.join(env.workspaceRoot, repo)} show --stat HEAD`,
+        `git -C ${path.join(env.workspaceRoot, repo)} log --oneline -5 ${branch} 2>/dev/null; git -C ${path.join(env.workspaceRoot, repo)} diff ${baseBranch}...${branch} --stat 2>/dev/null || git -C ${path.join(env.workspaceRoot, repo)} show --stat HEAD`,
     )
     .join('\n')
 
   const prompt = `
-你是鹦鹉工厂 Loop Engineer 的 Verifier Loop Agent（DeepSeek）。
+你是 Loop Engineer 的 Verifier Loop Agent（DeepSeek）。
 
 ## 效率硬约束（必须遵守）
 - **禁止** list_dir 工作区根或大范围扫目录（会浪费轮次）
